@@ -246,13 +246,14 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-[#1E2923]">Tanggal Konseling</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Calendar className="h-4 w-4 text-[#8BA398]" />
                   </div>
                   <input 
                     type="date" value={selectedDate} onChange={handleDateChange}
                     min={getLocalYYYYMMDD(new Date())}
-                    className="input-standard pl-10" required
+                    className="input-standard" required
+                    style={{ paddingLeft: '2.75rem' }}
                   />
                 </div>
               </div>
@@ -287,14 +288,15 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
             <div className="border-t border-[#EAEFEA] pt-6 space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#1E2923]">Nama Lengkap / Panggilan</label>
+                  <label className="text-sm font-medium text-[#1E2923]">Nama Lengkap</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <User className="h-4 w-4 text-[#8BA398]" />
                     </div>
                     <input 
                       type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className="input-standard pl-10" placeholder="John Doe" required
+                      className="input-standard" placeholder="Muhammad Sumbul" required
+                      style={{ paddingLeft: '2.75rem' }}
                     />
                   </div>
                 </div>
@@ -302,12 +304,13 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-[#1E2923]">Alamat Email</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <Mail className="h-4 w-4 text-[#8BA398]" />
                     </div>
                     <input 
                       type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="input-standard pl-10" placeholder="nama@email.com" required
+                      className="input-standard" placeholder="nama@email.com" required
+                      style={{ paddingLeft: '2.75rem' }}
                     />
                   </div>
                 </div>
@@ -403,7 +406,7 @@ const AdminDashboard = ({ appointments, setView }) => {
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center clean-card p-6">
           <div>
-            <h1 className="font-serif text-2xl text-[#1E2923] mb-1">Dasbor Laporan</h1>
+            <h1 className="font-serif text-2xl text-[#1E2923] mb-1">Dashboard Laporan</h1>
             <p className="text-[#6B7974] text-sm">Statistik dan manajemen sesi konseling bulanan.</p>
           </div>
           <button 
