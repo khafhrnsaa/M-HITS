@@ -1,22 +1,30 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Calendar, Clock, User, Mail, ChevronRight, ArrowLeft, ShieldCheck, CheckCircle2, Leaf, Info } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const AVAILABLE_SLOTS = [
   { id: '09:00', label: '09:00 - 10:00' },
   { id: '10:00', label: '10:00 - 11:00' },
-  // 11:00 - 13:30 Ishoma & Sholat Jumat
+  // 11:00 - 13:30 Ishoma & Sholat Jumat (Dihilangkan dari pilihan)
   { id: '13:30', label: '13:30 - 14:30' },
   { id: '14:30', label: '14:30 - 15:30' },
 ];
 
-// Sandi admin baru (6 karakter, tidak berurutan)
 const ADMIN_PIN = 'DDFIQU';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
 
+// Fungsi Helper untuk mencegah bug Timezone UTC vs WIB
+const getLocalYYYYMMDD = (d) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const date = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${date}`;
+};
+
 const formatDate = (dateString) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
+  const [y, m, d] = dateString.split('-');
+  const date = new Date(y, m - 1, d);
   return date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 };
 
@@ -25,7 +33,7 @@ const getNextFriday = () => {
   const day = d.getDay();
   const diff = (day <= 5) ? (5 - day) : (12 - day);
   d.setDate(d.getDate() + diff);
-  return d.toISOString().split('T')[0];
+  return getLocalYYYYMMDD(d);
 };
 
 const Navbar = ({ setView, view }) => (
@@ -122,6 +130,7 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // Sinkronisasi data real-time antar tab browser untuk simulasi
   const takenSlots = useMemo(() => {
     return appointments
       .filter(app => app.date === selectedDate)
@@ -130,8 +139,14 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
 
   const handleDateChange = (e) => {
     const newDate = e.target.value;
-    const day = new Date(newDate).getDay();
-    if (day !== 5) {
+    if (!newDate) return;
+
+    // Fix Bug Timezone: Baca tanggal sebagai array angka lokal
+    const [y, m, d] = newDate.split('-');
+    const localDate = new Date(y, m - 1, d);
+    const dayOfWeek = localDate.getDay();
+
+    if (dayOfWeek !== 5) {
       setErrorMsg('Layanan kami hanya beroperasi pada hari Jumat.');
       setSelectedDate('');
       setSelectedSlot('');
@@ -145,7 +160,18 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!selectedDate || !selectedSlot || !formData.name || !formData.email) return setErrorMsg('Mohon lengkapi formulir reservasi.');
-    if (takenSlots.includes(selectedSlot)) return setErrorMsg('Maaf, slot waktu ini baru saja terisi.');
+    
+    // Double Check Validasi Jumat saat submit
+    const [y, m, d] = selectedDate.split('-');
+    if (new Date(y, m - 1, d).getDay() !== 5) return setErrorMsg('Booking ditolak: Hanya berlaku hari Jumat.');
+    
+    // Check bentrok jadwal (Real-time check)
+    const currentAppointments = JSON.parse(localStorage.getItem('mindcare_appointments') || '[]');
+    const isTaken = currentAppointments.some(app => app.date === selectedDate && app.timeSlot === selectedSlot);
+    
+    if (isTaken || takenSlots.includes(selectedSlot)) {
+      return setErrorMsg('Maaf, slot waktu ini baru saja terisi oleh pengguna lain.');
+    }
 
     setIsSubmitting(true);
     setErrorMsg('');
@@ -161,7 +187,13 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
         status: 'booked'
       };
       
-      setAppointments([...appointments, newAppointment]);
+      const updatedAppointments = [...appointments, newAppointment];
+      setAppointments(updatedAppointments);
+      
+      // Paksa simpan ke local storage agar tab lain update
+      localStorage.setItem('mindcare_appointments', JSON.stringify(updatedAppointments));
+      window.dispatchEvent(new Event('storage'));
+
       setSuccessMsg(`Reservasi berhasil. Sesi dijadwalkan pada ${formatDate(selectedDate)} pukul ${selectedSlot}.`);
       setFormData({ name: '', email: '' }); 
       setSelectedSlot('');
@@ -219,7 +251,7 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
                   </div>
                   <input 
                     type="date" value={selectedDate} onChange={handleDateChange}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={getLocalYYYYMMDD(new Date())}
                     className="input-standard pl-10" required
                   />
                 </div>
@@ -243,7 +275,7 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
                         }`}
                       >
                         <span>{slot.label}</span>
-                        {isTaken && <span className="text-xs font-normal">Penuh</span>}
+                        {isTaken && <span className="text-xs font-normal bg-[#F0F4F2] px-2 py-1 rounded text-[#8BA398]">Penuh</span>}
                       </button>
                     );
                   })}
@@ -255,14 +287,14 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
             <div className="border-t border-[#EAEFEA] pt-6 space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#1E2923]">Nama Lengkap </label>
+                  <label className="text-sm font-medium text-[#1E2923]">Nama Lengkap / Panggilan</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <User className="h-4 w-4 text-[#8BA398]" />
                     </div>
                     <input 
                       type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className="input-standard pl-10" placeholder="Joan D Arc" required
+                      className="input-standard pl-10" placeholder="John Doe" required
                     />
                   </div>
                 </div>
@@ -356,7 +388,8 @@ const AdminDashboard = ({ appointments, setView }) => {
     const counts = Array(12).fill(0);
     appointments.forEach(app => {
       if (app.date) {
-        const monthIndex = new Date(app.date).getMonth();
+        const [y, m, d] = app.date.split('-');
+        const monthIndex = parseInt(m) - 1; // 0-based
         counts[monthIndex]++;
       }
     });
@@ -370,7 +403,7 @@ const AdminDashboard = ({ appointments, setView }) => {
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center clean-card p-6">
           <div>
-            <h1 className="font-serif text-2xl text-[#1E2923] mb-1">Dashboard Laporan</h1>
+            <h1 className="font-serif text-2xl text-[#1E2923] mb-1">Dasbor Laporan</h1>
             <p className="text-[#6B7974] text-sm">Statistik dan manajemen sesi konseling bulanan.</p>
           </div>
           <button 
@@ -466,7 +499,8 @@ export default function App() {
   const [view, setView] = useState('home');
   const [isAdminAuth, setIsAdminAuth] = useState(false);
 
-  useEffect(() => {
+  // Sync dengan LocalStorage secara realtime (lintas tab)
+  const syncAppointments = useCallback(() => {
     const savedData = localStorage.getItem('mindcare_appointments');
     if (savedData) {
       try {
@@ -478,10 +512,14 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('mindcare_appointments', JSON.stringify(appointments));
-  }, [appointments]);
+    // Baca data saat pertama kali buka
+    syncAppointments();
+    
+    // Dengarkan perubahan dari tab lain secara real-time
+    window.addEventListener('storage', syncAppointments);
+    return () => window.removeEventListener('storage', syncAppointments);
+  }, [syncAppointments]);
 
-  // Clean CSS Injection
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
