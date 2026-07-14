@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, Clock, User, Mail, ChevronRight, ArrowLeft, ShieldCheck, Sparkles, CheckCircle2, Leaf } from 'lucide-react';
+import { Calendar, Clock, User, Mail, ChevronRight, ArrowLeft, ShieldCheck, CheckCircle2, Leaf, Info } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const AVAILABLE_SLOTS = [
@@ -10,7 +10,8 @@ const AVAILABLE_SLOTS = [
   { id: '14:30', label: '14:30 - 15:30' },
 ];
 
-const ADMIN_PIN = 'DFQU';
+// Sandi admin baru (6 karakter, tidak berurutan)
+const ADMIN_PIN = 'DDFIQU';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
 
 const formatDate = (dateString) => {
@@ -27,35 +28,31 @@ const getNextFriday = () => {
   return d.toISOString().split('T')[0];
 };
 
-const BackgroundBlobs = () => (
-  <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-    <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-[#E3EBE6] mix-blend-multiply filter blur-[80px] opacity-70 animate-float"></div>
-    <div className="absolute top-[20%] right-[-5%] w-[35vw] h-[35vw] rounded-full bg-[#EAE5DF] mix-blend-multiply filter blur-[80px] opacity-70 animate-float-delayed"></div>
-    <div className="absolute bottom-[-20%] left-[20%] w-[50vw] h-[50vw] rounded-full bg-[#E8F0EC] mix-blend-multiply filter blur-[100px] opacity-60 animate-float"></div>
-  </div>
-);
-
 const Navbar = ({ setView, view }) => (
-  <nav className="fixed w-full top-0 z-50 bg-[#FAF9F6]/80 backdrop-blur-xl border-b border-[#E1E5E3]/50 transition-all duration-300">
+  <nav className="w-full bg-white border-b border-[#EAEFEA] sticky top-0 z-50">
     <div className="max-w-6xl mx-auto px-6 lg:px-8">
       <div className="flex justify-between h-20 items-center">
         <div 
-          className="flex items-center cursor-pointer group" 
+          className="flex items-center cursor-pointer" 
           onClick={() => setView('home')}
         >
-          <Leaf className="h-6 w-6 text-[#5A7367] mr-3 group-hover:rotate-12 transition-transform duration-500" strokeWidth={1.5} />
-          <span className="font-serif text-2xl text-[#2C3631] tracking-wide">MindCare.</span>
+          <div className="bg-[#F0F4F2] p-2 rounded-lg mr-3">
+            <Leaf className="h-5 w-5 text-[#4A5D54]" strokeWidth={2} />
+          </div>
+          <span className="font-serif text-xl font-medium text-[#1E2923] tracking-tight">MindCare</span>
         </div>
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-2 md:space-x-4">
           <button 
             onClick={() => setView('booking')}
-            className={`text-sm font-medium tracking-wide transition-colors ${view === 'booking' ? 'text-[#4A5D54]' : 'text-[#82968C] hover:text-[#4A5D54]'}`}
+            className={`text-sm font-medium px-4 py-2 rounded-lg transition-colors ${view === 'booking' ? 'bg-[#F0F4F2] text-[#4A5D54]' : 'text-[#6B7974] hover:bg-[#F9FAF9]'}`}
           >
             Reservasi
           </button>
+          <div className="w-px h-5 bg-[#EAEFEA] mx-2"></div>
           <button 
             onClick={() => setView('admin_auth')}
-            className="text-[#A9B8B0] hover:text-[#4A5D54] transition-colors p-2"
+            className="text-[#8BA398] hover:text-[#4A5D54] p-2 rounded-lg hover:bg-[#F0F4F2] transition-colors"
+            title="Akses Pengelola"
           >
             <ShieldCheck className="h-5 w-5" strokeWidth={1.5} />
           </button>
@@ -66,21 +63,52 @@ const Navbar = ({ setView, view }) => (
 );
 
 const HomeView = ({ setView }) => (
-      <h1 className="font-serif text-5xl md:text-7xl text-[#2C3631] leading-[1.1] tracking-tight">
-        Temukan ruang aman <br className="hidden md:block" />
-        <span className="italic text-[#5A7367]">untuk pikiranmu.</span>
-      </h1>
-      <p className="text-lg md:text-xl text-[#6B7974] max-w-2xl mx-auto leading-relaxed font-light">
-        Kami hadir di setiap hari Jumat untuk mendengarkan. Pesan sesi eksklusif Anda, temukan ketenangan dalam kerahasiaan penuh.
-      </p>
-      <div className="pt-8">
-        <button 
-          onClick={() => setView('booking')}
-          className="btn-primary group relative inline-flex items-center justify-center px-10 py-4 font-medium tracking-wide rounded-full text-sm md:text-base"
-        >
-          Jadwalkan Sesi
-          <ChevronRight className="w-4 h-4 ml-3 group-hover:translate-x-1.5 transition-transform duration-300" />
-        </button>
+  <div className="flex-1 flex flex-col justify-center max-w-6xl mx-auto px-6 lg:px-8 py-12 md:py-20 animate-fade-in w-full">
+    <div className="grid md:grid-cols-2 gap-12 items-center">
+      <div className="space-y-8 text-left">
+        <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-[#1E2923] leading-[1.15] tracking-tight">
+          Ketenangan dimulai dari langkah pertama.
+        </h1>
+        <p className="text-lg text-[#6B7974] leading-relaxed max-w-md">
+          Kami menyediakan ruang aman dan rahasia setiap hari Jumat. Konsultasikan isi pikiranmu dengan tenaga profesional kami.
+        </p>
+        <div className="pt-4 flex flex-col sm:flex-row gap-4">
+          <button 
+            onClick={() => setView('booking')}
+            className="bg-[#4A5D54] text-white px-8 py-3.5 rounded-xl font-medium text-sm hover:bg-[#3C4B44] transition-colors flex items-center justify-center group"
+          >
+            Jadwalkan Sesi Sekarang
+            <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+        
+        <div className="flex items-center gap-6 pt-8 border-t border-[#EAEFEA] mt-12">
+          <div className="flex items-center gap-2 text-sm text-[#6B7974]">
+            <Clock className="w-4 h-4 text-[#8BA398]" />
+            <span>Setiap Jumat</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-[#6B7974]">
+            <Info className="w-4 h-4 text-[#8BA398]" />
+            <span>Privasi Terjamin</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden md:flex justify-end">
+        <div className="w-full max-w-md aspect-square bg-[#F0F4F2] rounded-3xl p-8 relative overflow-hidden flex flex-col justify-between border border-[#EAEFEA]">
+           <div className="flex justify-between items-start">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <Leaf className="w-6 h-6 text-[#4A5D54]" />
+              </div>
+           </div>
+           <div>
+             <h3 className="font-serif text-2xl text-[#1E2923] mb-2">MindCare</h3>
+             <p className="text-[#6B7974] text-sm">Mental Health Support System</p>
+           </div>
+           {/* Decorative elements representing structure */}
+           <div className="absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-[#EAEFEA] rounded-full opacity-50"></div>
+           <div className="absolute bottom-0 right-10 w-24 h-24 bg-[#E2EAE5] rounded-tl-full opacity-50"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -104,7 +132,7 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
     const newDate = e.target.value;
     const day = new Date(newDate).getDay();
     if (day !== 5) {
-      setErrorMsg('Layanan eksklusif ini hanya tersedia pada hari Jumat.');
+      setErrorMsg('Layanan kami hanya beroperasi pada hari Jumat.');
       setSelectedDate('');
       setSelectedSlot('');
     } else {
@@ -116,13 +144,12 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!selectedDate || !selectedSlot || !formData.name || !formData.email) return setErrorMsg('Mohon lengkapi detail reservasi Anda.');
-    if (takenSlots.includes(selectedSlot)) return setErrorMsg('Maaf, jadwal ini baru saja dipilih oleh orang lain.');
+    if (!selectedDate || !selectedSlot || !formData.name || !formData.email) return setErrorMsg('Mohon lengkapi formulir reservasi.');
+    if (takenSlots.includes(selectedSlot)) return setErrorMsg('Maaf, slot waktu ini baru saja terisi.');
 
     setIsSubmitting(true);
     setErrorMsg('');
     
-    // Simulasi loading sejenak agar terasa natural
     setTimeout(() => {
       const newAppointment = {
         id: Date.now().toString(),
@@ -135,7 +162,7 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
       };
       
       setAppointments([...appointments, newAppointment]);
-      setSuccessMsg(`Sesi Anda pada ${formatDate(selectedDate)} pukul ${selectedSlot} berhasil dijadwalkan.`);
+      setSuccessMsg(`Reservasi berhasil. Sesi dijadwalkan pada ${formatDate(selectedDate)} pukul ${selectedSlot}.`);
       setFormData({ name: '', email: '' }); 
       setSelectedSlot('');
       setIsSubmitting(false);
@@ -144,14 +171,17 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
 
   if (successMsg) {
     return (
-      <div className="relative z-10 flex-1 flex items-center justify-center p-6 min-h-screen">
-        <div className="glass-card p-12 rounded-[2.5rem] max-w-md w-full text-center animate-slide-up flex flex-col items-center">
-          <div className="w-20 h-20 bg-[#E8F0EC] rounded-full flex items-center justify-center mb-8">
-            <CheckCircle2 className="w-10 h-10 text-[#5A7367]" strokeWidth={1.5} />
+      <div className="flex-1 flex items-center justify-center p-6 bg-[#F7F9F8]">
+        <div className="clean-card p-10 max-w-md w-full text-center animate-fade-in">
+          <div className="w-16 h-16 bg-[#E2EAE5] rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-8 h-8 text-[#4A5D54]" strokeWidth={2} />
           </div>
-          <h2 className="font-serif text-3xl text-[#2C3631] mb-4">Reservasi Berhasil</h2>
-          <p className="text-[#6B7974] mb-10 leading-relaxed font-light">{successMsg}</p>
-          <button onClick={() => { setSuccessMsg(''); setView('home'); }} className="btn-primary w-full py-4 rounded-full text-sm font-medium tracking-wide">
+          <h2 className="font-serif text-2xl text-[#1E2923] mb-3">Reservasi Berhasil</h2>
+          <p className="text-[#6B7974] text-sm mb-8 leading-relaxed">{successMsg}</p>
+          <button 
+            onClick={() => { setSuccessMsg(''); setView('home'); }} 
+            className="w-full bg-[#4A5D54] text-white py-3 rounded-xl text-sm font-medium hover:bg-[#3C4B44] transition-colors"
+          >
             Kembali ke Beranda
           </button>
         </div>
@@ -160,94 +190,112 @@ const BookingView = ({ setView, appointments, setAppointments }) => {
   }
 
   return (
-    <div className="relative z-10 flex-1 flex items-center justify-center p-6 md:p-12 min-h-screen pt-28">
-      <div className="w-full max-w-3xl glass-card rounded-[2.5rem] p-8 md:p-12 animate-slide-up">
-        <div className="text-center mb-12">
-          <h2 className="font-serif text-4xl text-[#2C3631] mb-4">Mulai Perjalananmu</h2>
-          <p className="text-[#6B7974] font-light max-w-lg mx-auto">
-            Berikan dirimu ruang untuk bernapas. Pilih jadwal luang di hari Jumat untuk sesi personal yang mendalam.
-          </p>
+    <div className="flex-1 py-10 px-6 md:py-16 bg-[#F7F9F8]">
+      <div className="max-w-2xl mx-auto">
+        <button onClick={() => setView('home')} className="flex items-center text-sm text-[#6B7974] hover:text-[#1E2923] mb-6 transition-colors">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Kembali
+        </button>
+
+        <div className="clean-card p-8 md:p-10">
+          <div className="mb-8 border-b border-[#EAEFEA] pb-6">
+            <h2 className="font-serif text-3xl text-[#1E2923] mb-2">Formulir Reservasi</h2>
+            <p className="text-[#6B7974] text-sm">Pilih jadwal luang di hari Jumat untuk sesi personal berdurasi 60 menit.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {errorMsg && (
+              <div className="bg-[#FFF8F8] text-[#D14343] p-4 rounded-xl text-sm border border-[#FDECEC] flex items-start">
+                 <Info className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
+                 <p>{errorMsg}</p>
+              </div>
+            )}
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#1E2923]">Tanggal Konseling</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Calendar className="h-4 w-4 text-[#8BA398]" />
+                  </div>
+                  <input 
+                    type="date" value={selectedDate} onChange={handleDateChange}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="input-standard pl-10" required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#1E2923]">Pilih Waktu (Jumat)</label>
+                <div className="grid grid-cols-1 gap-3">
+                  {AVAILABLE_SLOTS.map((slot) => {
+                    const isTaken = takenSlots.includes(slot.id);
+                    return (
+                      <button
+                        key={slot.id} type="button" disabled={isTaken || !selectedDate}
+                        onClick={() => setSelectedSlot(slot.id)}
+                        className={`px-4 py-3 border rounded-xl text-sm font-medium transition-all text-left flex justify-between items-center ${
+                          isTaken 
+                            ? 'bg-[#F9FAF9] border-[#EAEFEA] text-[#A9B8B0] cursor-not-allowed' 
+                            : selectedSlot === slot.id
+                              ? 'bg-[#E2EAE5] border-[#4A5D54] text-[#1E2923]'
+                              : 'bg-white border-[#EAEFEA] text-[#4A5D54] hover:border-[#8BA398]'
+                        }`}
+                      >
+                        <span>{slot.label}</span>
+                        {isTaken && <span className="text-xs font-normal">Penuh</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-[#8BA398] mt-2">* Jeda Ishoma: 11:00 - 13:30 WIB</p>
+              </div>
+            </div>
+
+            <div className="border-t border-[#EAEFEA] pt-6 space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#1E2923]">Nama Lengkap </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <User className="h-4 w-4 text-[#8BA398]" />
+                    </div>
+                    <input 
+                      type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      className="input-standard pl-10" placeholder="Joan D Arc" required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#1E2923]">Alamat Email</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="h-4 w-4 text-[#8BA398]" />
+                    </div>
+                    <input 
+                      type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="input-standard pl-10" placeholder="nama@email.com" required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 flex justify-end">
+              <button 
+                type="submit" disabled={isSubmitting || !selectedSlot}
+                className={`w-full md:w-auto px-8 py-3 rounded-xl text-sm font-medium transition-colors ${
+                  isSubmitting || !selectedSlot
+                    ? 'bg-[#EAEFEA] text-[#8BA398] cursor-not-allowed'
+                    : 'bg-[#4A5D54] text-white hover:bg-[#3C4B44]'
+                }`}
+              >
+                {isSubmitting ? 'Memproses...' : 'Konfirmasi Sesi'}
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-xl mx-auto">
-          {errorMsg && (
-            <div className="bg-[#FFF8F8] text-[#A65B5B] p-4 rounded-2xl text-sm border border-[#F2E6E6] flex items-center animate-fade-in">
-               <span className="mr-3">✦</span> {errorMsg}
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <label className="text-xs font-medium text-[#82968C] uppercase tracking-wider flex items-center">
-              <Calendar className="w-3.5 h-3.5 mr-2" /> Tanggal (Jumat)
-            </label>
-            <input 
-              type="date" value={selectedDate} onChange={handleDateChange}
-              min={new Date().toISOString().split('T')[0]}
-              className="input-calm w-full p-4 rounded-2xl text-[#2C3631]" required
-            />
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-xs font-medium text-[#82968C] uppercase tracking-wider flex items-center">
-              <Clock className="w-3.5 h-3.5 mr-2" /> Waktu Sesi (1 Jam)
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              {AVAILABLE_SLOTS.map((slot) => {
-                const isTaken = takenSlots.includes(slot.id);
-                return (
-                  <button
-                    key={slot.id} type="button" disabled={isTaken || !selectedDate}
-                    onClick={() => setSelectedSlot(slot.id)}
-                    data-selected={selectedSlot === slot.id}
-                    className={`slot-btn relative p-4 rounded-2xl border text-left overflow-hidden ${
-                      isTaken 
-                        ? 'bg-[#F4F5F4]/50 border-transparent text-[#B5C2BC] cursor-not-allowed' 
-                        : 'bg-white border-[#E1E5E3] text-[#4A5D54]'
-                    }`}
-                  >
-                    <div className="font-medium text-lg mb-1">{slot.id}</div>
-                    <div className="text-xs opacity-70 font-light">{isTaken ? 'Telah direservasi' : 'Tersedia'}</div>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-xs text-[#8BA398] font-light mt-2 italic">* Terdapat jeda istirahat pada pukul 11:00 - 13:30 WIB.</p>
-          </div>
-
-          <div className="pt-6 space-y-5 border-t border-[#E1E5E3]/50">
-            <div>
-              <label className="text-xs font-medium text-[#82968C] uppercase tracking-wider flex items-center mb-3">
-                <User className="w-3.5 h-3.5 mr-2" /> Nama
-              </label>
-              <input 
-                type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="input-calm w-full p-4 rounded-2xl text-[#2C3631]" placeholder="Nama panggilan yang membuatmu nyaman" required
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-[#82968C] uppercase tracking-wider flex items-center mb-3">
-                <Mail className="w-3.5 h-3.5 mr-2" /> Email
-              </label>
-              <input 
-                type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="input-calm w-full p-4 rounded-2xl text-[#2C3631]" placeholder="Untuk konfirmasi jadwal" required
-              />
-            </div>
-          </div>
-
-          <div className="pt-4">
-            <button 
-              type="submit" disabled={isSubmitting || !selectedSlot}
-              className={`w-full py-4.5 rounded-2xl text-sm tracking-wide font-medium transition-all duration-500 ${
-                isSubmitting || !selectedSlot
-                  ? 'bg-[#E1E5E3] text-[#A9B8B0] cursor-not-allowed'
-                  : 'btn-primary py-4'
-              }`}
-            >
-              {isSubmitting ? 'Memproses...' : 'Konfirmasi Reservasi'}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );
@@ -264,28 +312,39 @@ const AdminAuth = ({ onLogin, setView }) => {
   };
 
   return (
-    <div className="relative z-10 flex-1 flex items-center justify-center p-6 min-h-screen">
-      <div className="glass-card p-10 rounded-[2.5rem] max-w-sm w-full animate-slide-up">
-        <div className="flex justify-center mb-8">
-          <ShieldCheck className="w-10 h-10 text-[#8BA398]" strokeWidth={1} />
+    <div className="flex-1 flex items-center justify-center p-6 bg-[#F7F9F8]">
+      <div className="clean-card p-10 max-w-sm w-full animate-fade-in">
+        <div className="mb-6 border-b border-[#EAEFEA] pb-6 text-center">
+          <div className="w-12 h-12 bg-[#F0F4F2] rounded-full flex items-center justify-center mx-auto mb-4">
+            <ShieldCheck className="w-6 h-6 text-[#4A5D54]" strokeWidth={2} />
+          </div>
+          <h2 className="font-serif text-xl text-[#1E2923]">Akses Administrator</h2>
         </div>
-        <h2 className="font-serif text-2xl text-center text-[#2C3631] mb-2">Akses Pengelola</h2>
-        <p className="text-center text-sm text-[#8BA398] mb-8 font-light">Masukkan sandi</p>
         
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-5">
           <div>
+            <label className="block text-xs font-medium text-[#6B7974] mb-2 uppercase tracking-wider text-center">
+              Masukkan Sandi (6 Karakter)
+            </label>
             <input 
-              type="password" value={pin} onChange={(e) => { setPin(e.target.value); setError(false); }}
-              className={`w-full text-center p-4 text-3xl tracking-[0.7em] bg-transparent border-b-2 outline-none transition-colors rounded-none ${error ? 'border-[#A65B5B] text-[#A65B5B]' : 'border-[#D5DDD9] text-[#2C3631] focus:border-[#4A5D54]'}`}
-              placeholder="••••" maxLength="4" autoFocus
+              type="password" 
+              value={pin} 
+              onChange={(e) => { setPin(e.target.value); setError(false); }}
+              className={`w-full text-center p-3 text-2xl tracking-[0.5em] font-mono rounded-xl border outline-none transition-colors ${
+                error ? 'border-[#D14343] bg-[#FFF8F8] text-[#D14343]' : 'border-[#EAEFEA] bg-[#F9FAF9] text-[#1E2923] focus:border-[#4A5D54]'
+              }`}
+              placeholder="••••••" 
+              maxLength="6" 
+              autoFocus
             />
           </div>
-          <button type="submit" className="btn-primary w-full py-4 rounded-full text-sm font-medium tracking-wide">
-            Masuk
+          <button type="submit" className="w-full bg-[#1E2923] text-white py-3 rounded-xl text-sm font-medium hover:bg-[#2C3631] transition-colors">
+            Autentikasi
           </button>
         </form>
-        <button onClick={() => setView('home')} className="w-full mt-6 text-[#8BA398] text-sm hover:text-[#4A5D54] flex items-center justify-center transition-colors">
-          <ArrowLeft className="w-3.5 h-3.5 mr-2" /> Kembali
+        
+        <button onClick={() => setView('home')} className="w-full mt-6 text-[#8BA398] text-sm hover:text-[#1E2923] transition-colors">
+          Batal
         </button>
       </div>
     </div>
@@ -306,87 +365,87 @@ const AdminDashboard = ({ appointments, setView }) => {
   }, [appointments]);
 
   return (
-    <div className="relative z-10 flex-1 p-6 md:p-12 min-h-screen pt-28">
-      <div className="max-w-5xl mx-auto space-y-8 animate-slide-up">
+    <div className="flex-1 p-6 md:p-10 bg-[#F7F9F8]">
+      <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
         
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center glass-card p-6 rounded-3xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center clean-card p-6">
           <div>
-            <h1 className="font-serif text-2xl text-[#2C3631] mb-1">Tinjauan Praktik</h1>
-            <p className="text-[#6B7974] text-sm font-light">Pantau jadwal dan statistik konseling secara real-time.</p>
+            <h1 className="font-serif text-2xl text-[#1E2923] mb-1">Dashboard Laporan</h1>
+            <p className="text-[#6B7974] text-sm">Statistik dan manajemen sesi konseling bulanan.</p>
           </div>
           <button 
             onClick={() => setView('home')}
-            className="mt-4 md:mt-0 px-6 py-2.5 rounded-full border border-[#D5DDD9] text-[#4A5D54] text-sm font-medium hover:bg-[#F4F5F4] transition-colors"
+            className="mt-4 md:mt-0 px-4 py-2 rounded-lg border border-[#EAEFEA] text-[#4A5D54] text-sm font-medium hover:bg-[#F0F4F2] transition-colors"
           >
-            Tutup Dashboard
+            Keluar Sistem
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 glass-card p-8 rounded-3xl">
-            <h3 className="text-sm font-medium text-[#82968C] uppercase tracking-wider mb-8">Tren Sesi Konseling</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 clean-card p-6">
+            <h3 className="text-sm font-medium text-[#1E2923] mb-6 border-b border-[#EAEFEA] pb-4">Tren Konseling Bulanan</h3>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E1E5E3" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#8BA398', fontSize: 12}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#8BA398', fontSize: 12}} />
+                <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EAEFEA" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6B7974', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7974', fontSize: 12}} allowDecimals={false} />
                   <Tooltip 
-                    cursor={{fill: 'rgba(244, 245, 244, 0.5)'}}
-                    contentStyle={{borderRadius: '16px', border: '1px solid #E1E5E3', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)'}}
+                    cursor={{fill: '#F0F4F2'}}
+                    contentStyle={{borderRadius: '8px', border: '1px solid #EAEFEA', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'}}
                   />
-                  <Bar dataKey="Sesi" fill="#6B7974" radius={[6, 6, 6, 6]} maxBarSize={40} />
+                  <Bar dataKey="Sesi" fill="#4A5D54" radius={[4, 4, 0, 0]} maxBarSize={48} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="space-y-8">
-            <div className="bg-[#4A5D54] p-8 rounded-3xl text-white shadow-xl shadow-[#4A5D54]/20 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-6 opacity-10"><Leaf className="w-24 h-24" /></div>
-              <h3 className="text-[#A9B8B0] text-sm font-medium uppercase tracking-wider mb-2 relative z-10">Total Sesi</h3>
-              <p className="font-serif text-6xl relative z-10">{appointments.length}</p>
+          <div className="space-y-6">
+            <div className="clean-card p-6 bg-[#1E2923] text-white border-none shadow-md">
+              <h3 className="text-[#8BA398] text-sm font-medium mb-2">Total Seluruh Sesi</h3>
+              <p className="font-serif text-5xl">{appointments.length}</p>
             </div>
             
-            <div className="glass-card p-8 rounded-3xl">
-              <h3 className="text-sm font-medium text-[#82968C] uppercase tracking-wider mb-6">Waktu Operasional</h3>
-              <ul className="space-y-4 text-sm text-[#6B7974]">
-                <li className="flex justify-between border-b border-[#E1E5E3]/50 pb-3"><span>Hari</span> <span className="text-[#2C3631]">Jumat</span></li>
-                <li className="flex justify-between border-b border-[#E1E5E3]/50 pb-3"><span>Jam Operasional</span> <span className="text-[#2C3631]">09:00 - 15:30</span></li>
-                <li className="flex justify-between border-b border-[#E1E5E3]/50 pb-3"><span>Jeda Istirahat</span> <span className="text-[#2C3631]">11:00 - 13:30</span></li>
-                <li className="flex justify-between"><span>Durasi / Sesi</span> <span className="text-[#2C3631]">60 Menit</span></li>
+            <div className="clean-card p-6">
+              <h3 className="text-sm font-medium text-[#1E2923] mb-4 border-b border-[#EAEFEA] pb-3">Informasi Sistem</h3>
+              <ul className="space-y-3 text-sm text-[#6B7974]">
+                <li className="flex justify-between"><span>Jadwal Aktif</span> <span className="font-medium text-[#1E2923]">Hari Jumat</span></li>
+                <li className="flex justify-between"><span>Jam Kerja</span> <span className="font-medium text-[#1E2923]">09:00 - 15:30</span></li>
+                <li className="flex justify-between"><span>Istirahat</span> <span className="font-medium text-[#1E2923]">11:00 - 13:30</span></li>
               </ul>
             </div>
           </div>
         </div>
 
-        <div className="glass-card rounded-3xl overflow-hidden">
-          <div className="p-8 border-b border-[#E1E5E3]/50">
-            <h3 className="text-sm font-medium text-[#82968C] uppercase tracking-wider">Daftar Jadwal Mendatang</h3>
+        <div className="clean-card overflow-hidden">
+          <div className="p-6 border-b border-[#EAEFEA] bg-white">
+            <h3 className="text-sm font-medium text-[#1E2923]">Daftar Klien Terdaftar</h3>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[#F4F5F4]/50 text-[#8BA398] font-medium border-b border-[#E1E5E3]/50">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-[#F9FAF9] text-[#6B7974] border-b border-[#EAEFEA]">
                 <tr>
-                  <th className="px-8 py-5 font-medium">Klien</th>
-                  <th className="px-8 py-5 font-medium">Tanggal</th>
-                  <th className="px-8 py-5 font-medium">Waktu</th>
+                  <th className="px-6 py-4 font-medium">Nama Klien</th>
+                  <th className="px-6 py-4 font-medium">Tanggal</th>
+                  <th className="px-6 py-4 font-medium">Jam</th>
+                  <th className="px-6 py-4 font-medium">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E1E5E3]/50">
+              <tbody className="divide-y divide-[#EAEFEA] bg-white">
                 {appointments.length === 0 ? (
-                  <tr><td colSpan="3" className="text-center py-12 text-[#8BA398] font-light">Belum ada jadwal yang direservasi.</td></tr>
+                  <tr><td colSpan="4" className="text-center py-10 text-[#8BA398]">Belum ada data reservasi.</td></tr>
                 ) : (
                   appointments.sort((a, b) => new Date(b.date) - new Date(a.date)).map((app) => (
-                    <tr key={app.id} className="hover:bg-white/50 transition-colors">
-                      <td className="px-8 py-5 text-[#2C3631]">
-                        <div className="font-medium mb-0.5">{app.userName}</div>
+                    <tr key={app.id} className="hover:bg-[#F9FAF9] transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-[#1E2923]">{app.userName}</div>
                         <div className="text-xs text-[#8BA398]">{app.userEmail}</div>
                       </td>
-                      <td className="px-8 py-5 text-[#6B7974]">{formatDate(app.date)}</td>
-                      <td className="px-8 py-5">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#E8F0EC] text-[#4A5D54]">
-                          <Clock className="w-3 h-3 mr-1.5" /> {app.timeSlot}
+                      <td className="px-6 py-4 text-[#4A5D54]">{formatDate(app.date)}</td>
+                      <td className="px-6 py-4 text-[#4A5D54]">{app.timeSlot}</td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-[#E2EAE5] text-[#4A5D54]">
+                          Terkonfirmasi
                         </span>
                       </td>
                     </tr>
@@ -407,7 +466,6 @@ export default function App() {
   const [view, setView] = useState('home');
   const [isAdminAuth, setIsAdminAuth] = useState(false);
 
-  // Load data dari local storage saat web dibuka
   useEffect(() => {
     const savedData = localStorage.getItem('mindcare_appointments');
     if (savedData) {
@@ -419,67 +477,52 @@ export default function App() {
     }
   }, []);
 
-  // Simpan data ke local storage tiap kali ada reservasi baru
   useEffect(() => {
     localStorage.setItem('mindcare_appointments', JSON.stringify(appointments));
   }, [appointments]);
 
+  // Clean CSS Injection
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
       
       body { 
         font-family: 'Plus Jakarta Sans', sans-serif; 
-        background-color: #FAF9F6; 
-        color: #2D3A35; 
+        background-color: #F7F9F8; 
       }
-      .font-serif { font-family: 'Playfair Display', serif; }
-      
-      .glass-card { 
-        background: rgba(255, 255, 255, 0.6); 
-        backdrop-filter: blur(24px); 
-        -webkit-backdrop-filter: blur(24px);
-        border: 1px solid rgba(255, 255, 255, 0.8); 
-        box-shadow: 0 30px 60px rgba(0,0,0,0.02); 
+      .font-serif { 
+        font-family: 'Playfair Display', serif; 
       }
       
-      .input-calm { 
-        background: #F4F5F4; border: 1px solid transparent; transition: all 0.3s ease; 
-      }
-      .input-calm:focus { 
-        background: #FFFFFF; border-color: #A9B8B0; outline: none; box-shadow: 0 0 0 4px rgba(169, 184, 176, 0.15); 
+      .clean-card { 
+        background: #FFFFFF; 
+        border-radius: 1rem; 
+        border: 1px solid #EAEFEA;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
       }
       
-      .btn-primary { 
-        background: #4A5D54; color: white; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+      .input-standard { 
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: #F9FAF9; 
+        border: 1px solid #EAEFEA; 
+        border-radius: 0.75rem;
+        color: #1E2923;
+        transition: all 0.2s ease; 
       }
-      .btn-primary:hover { 
-        background: #3C4B44; transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(74, 93, 84, 0.3); 
+      .input-standard:focus { 
+        background: #FFFFFF; 
+        border-color: #8BA398; 
+        outline: none; 
+        box-shadow: 0 0 0 3px rgba(139, 163, 152, 0.1); 
       }
-      .btn-primary:active { transform: translateY(0); }
       
-      .slot-btn { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-      .slot-btn[data-selected="true"] { background: #4A5D54; color: white; border-color: #4A5D54; transform: scale(0.98); }
-      .slot-btn[data-selected="false"]:hover { border-color: #A9B8B0; background: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-      
-      @keyframes float { 
-        0% { transform: translate(0, 0) rotate(0deg) scale(1); } 
-        33% { transform: translate(30px, -50px) rotate(10deg) scale(1.05); } 
-        66% { transform: translate(-20px, 20px) rotate(-5deg) scale(0.95); } 
-        100% { transform: translate(0, 0) rotate(0deg) scale(1); } 
+      @keyframes fadeIn { 
+        from { opacity: 0; transform: translateY(10px); } 
+        to { opacity: 1; transform: translateY(0); } 
       }
-      .animate-float { animation: float 25s infinite ease-in-out; }
-      .animate-float-delayed { animation: float 30s infinite ease-in-out reverse; }
-      
-      @keyframes slideUpFade { 
-        from { opacity: 0; transform: translateY(40px); filter: blur(4px); } 
-        to { opacity: 1; transform: translateY(0); filter: blur(0); } 
-      }
-      .animate-slide-up { animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-      
-      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-      .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
+      .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
     `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
@@ -496,10 +539,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] selection:bg-[#E8F0EC] selection:text-[#2C3631] relative overflow-hidden">
-      <BackgroundBlobs />
+    <div className="min-h-screen flex flex-col selection:bg-[#E2EAE5] selection:text-[#1E2923]">
       <Navbar setView={setView} view={view} />
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col bg-[#F7F9F8]">
         {renderView()}
       </main>
     </div>
