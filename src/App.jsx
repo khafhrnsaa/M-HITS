@@ -10,7 +10,7 @@ const AVAILABLE_SLOTS = [
   { id: '14:30', label: '14:30 - 15:30' },
 ];
 
-const ADMIN_PIN = 'DDFIQU';
+const ADMIN_PIN = 'DFQU';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
 
 const formatDate = (dateString) => {
@@ -66,9 +66,6 @@ const Navbar = ({ setView, view }) => (
 );
 
 const HomeView = ({ setView }) => (
-  <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 min-h-screen text-center">
-    <div className="max-w-3xl space-y-10 animate-slide-up">
-      </div>
       <h1 className="font-serif text-5xl md:text-7xl text-[#2C3631] leading-[1.1] tracking-tight">
         Temukan ruang aman <br className="hidden md:block" />
         <span className="italic text-[#5A7367]">untuk pikiranmu.</span>
