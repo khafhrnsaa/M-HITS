@@ -1,24 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query } from 'firebase/firestore';
-import { Calendar, Clock, User, Mail, ChevronRight, BarChart3, ArrowLeft, Heart, ShieldCheck, Sparkles, CheckCircle2, Leaf } from 'lucide-react';
+import { Calendar, Clock, User, Mail, ChevronRight, ArrowLeft, ShieldCheck, Sparkles, CheckCircle2, Leaf } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'mindcare-app';
 
 const AVAILABLE_SLOTS = [
   { id: '09:00', label: '09:00 - 10:00' },
   { id: '10:00', label: '10:00 - 11:00' },
+  // 11:00 - 13:30 Ishoma & Sholat Jumat
   { id: '13:30', label: '13:30 - 14:30' },
   { id: '14:30', label: '14:30 - 15:30' },
 ];
 
-const ADMIN_PIN = '8987';
+const ADMIN_PIN = 'DDFIQU';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
 
 const formatDate = (dateString) => {
@@ -34,8 +26,6 @@ const getNextFriday = () => {
   d.setDate(d.getDate() + diff);
   return d.toISOString().split('T')[0];
 };
-
-// --- Komponen UI Estetik ---
 
 const BackgroundBlobs = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -102,7 +92,7 @@ const HomeView = ({ setView }) => (
   </div>
 );
 
-const BookingView = ({ setView, appointments, user }) => {
+const BookingView = ({ setView, appointments, setAppointments }) => {
   const [selectedDate, setSelectedDate] = useState(getNextFriday());
   const [selectedSlot, setSelectedSlot] = useState('');
   const [formData, setFormData] = useState({ name: '', email: '' });
@@ -130,28 +120,32 @@ const BookingView = ({ setView, appointments, user }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!user) return setErrorMsg('Koneksi terputus. Silakan muat ulang halaman.');
     if (!selectedDate || !selectedSlot || !formData.name || !formData.email) return setErrorMsg('Mohon lengkapi detail reservasi Anda.');
     if (takenSlots.includes(selectedSlot)) return setErrorMsg('Maaf, jadwal ini baru saja dipilih oleh orang lain.');
 
     setIsSubmitting(true);
     setErrorMsg('');
-    try {
-      const publicRef = collection(db, 'artifacts', appId, 'public', 'data', 'mindcare_appointments');
-      await addDoc(publicRef, {
-        date: selectedDate, timeSlot: selectedSlot,
-        userName: formData.name, userEmail: formData.email,
-        createdAt: serverTimestamp(), status: 'booked'
-      });
+    
+    // Simulasi loading sejenak agar terasa natural
+    setTimeout(() => {
+      const newAppointment = {
+        id: Date.now().toString(),
+        date: selectedDate, 
+        timeSlot: selectedSlot,
+        userName: formData.name, 
+        userEmail: formData.email,
+        createdAt: new Date().toISOString(), 
+        status: 'booked'
+      };
+      
+      setAppointments([...appointments, newAppointment]);
       setSuccessMsg(`Sesi Anda pada ${formatDate(selectedDate)} pukul ${selectedSlot} berhasil dijadwalkan.`);
-      setFormData({ name: '', email: '' }); setSelectedSlot('');
-    } catch (err) {
-      setErrorMsg('Terjadi kesalahan. Silakan coba beberapa saat lagi.');
-    } finally {
+      setFormData({ name: '', email: '' }); 
+      setSelectedSlot('');
       setIsSubmitting(false);
-    }
+    }, 800);
   };
 
   if (successMsg) {
@@ -415,40 +409,27 @@ const AdminDashboard = ({ appointments, setView }) => {
 }
 
 export default function App() {
-  const [user, setUser] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [view, setView] = useState('home');
   const [isAdminAuth, setIsAdminAuth] = useState(false);
 
+  // Load data dari local storage saat web dibuka
   useEffect(() => {
-    const initAuth = async () => {
+    const savedData = localStorage.getItem('mindcare_appointments');
+    if (savedData) {
       try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (error) {
-        console.error("Auth error:", error);
+        setAppointments(JSON.parse(savedData));
+      } catch (e) {
+        console.error("Gagal membaca data", e);
       }
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
+    }
   }, []);
 
+  // Simpan data ke local storage tiap kali ada reservasi baru
   useEffect(() => {
-    if (!user) return;
-    const publicRef = collection(db, 'artifacts', appId, 'public', 'data', 'mindcare_appointments');
-    const q = query(publicRef);
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAppointments(data);
-    });
-    return () => unsubscribe();
-  }, [user]);
+    localStorage.setItem('mindcare_appointments', JSON.stringify(appointments));
+  }, [appointments]);
 
-  // Inject Custom Styles, Fonts, and Animations
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
@@ -513,7 +494,7 @@ export default function App() {
   const renderView = () => {
     switch (view) {
       case 'home': return <HomeView setView={setView} />;
-      case 'booking': return <BookingView setView={setView} appointments={appointments} user={user} />;
+      case 'booking': return <BookingView setView={setView} appointments={appointments} setAppointments={setAppointments} />;
       case 'admin_auth': return isAdminAuth ? <AdminDashboard appointments={appointments} setView={setView} /> : <AdminAuth onLogin={() => { setIsAdminAuth(true); setView('admin_dashboard'); }} setView={setView} />;
       case 'admin_dashboard': return isAdminAuth ? <AdminDashboard appointments={appointments} setView={setView} /> : <HomeView setView={setView} />;
       default: return <HomeView setView={setView} />;
